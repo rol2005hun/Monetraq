@@ -58,7 +58,7 @@ export default defineNuxtConfig({
       cleanupOutdatedCaches: true
     },
     client: {
-      installPrompt: false
+      installPrompt: true
     },
     devOptions: {
       enabled: false,
