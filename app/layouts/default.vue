@@ -23,11 +23,16 @@
     <footer class="layout__footer">
       <small>&copy; {{ currentYear }} Monetraq. Built for focus and flow.</small>
     </footer>
+
+    <ClientOnly>
+      <PwaInstallBanner />
+    </ClientOnly>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useConnectivity } from '~/composables/useConnectivity'
+import PwaInstallBanner from '~/components/ui/PwaInstallBanner.vue'
 
 const { isOnline } = useConnectivity()
 const currentYear = new Date().getFullYear()

@@ -13,6 +13,7 @@
             :key="option.value"
             type="button"
             :class="['range__button', { 'range__button--active': viewMode === option.value }]"
+            :disabled="isHydrating"
             @click="viewMode = option.value"
           >
             {{ option.label }}
@@ -23,18 +24,21 @@
           v-model="dailyPicker"
           class="range__input"
           type="date"
+          :disabled="isHydrating"
         />
         <input
           v-else-if="viewMode === 'weekly'"
           v-model="weeklyPicker"
           class="range__input"
           type="week"
+          :disabled="isHydrating"
         />
         <input
           v-else-if="viewMode === 'monthly'"
           v-model="monthlyPicker"
           class="range__input"
           type="month"
+          :disabled="isHydrating"
         />
         <input
           v-else
@@ -44,6 +48,7 @@
           min="1970"
           max="2100"
           step="1"
+          :disabled="isHydrating"
         />
       </div>
     </section>
@@ -52,19 +57,19 @@
       <TransactionForm :categories="availableCategories" @submit="handleInsert" />
 
       <div class="dashboard__summary">
-        <StatCard label="Balance" tone="accent">
+        <StatCard label="Balance" tone="accent" :loading="isHydrating">
           {{ formatCurrency(rangeTotals.net, currencyCode, preferredLocale) }}
           <template #meta>
             {{ rangeTotals.net >= 0 ? 'You are in profit' : 'Currently in deficit' }}
           </template>
         </StatCard>
-        <StatCard label="Income" tone="positive">
+        <StatCard label="Income" tone="positive" :loading="isHydrating">
           {{ formatCurrency(rangeTotals.income, currencyCode, preferredLocale) }}
           <template #meta>
             {{ formatRangeLabel }}
           </template>
         </StatCard>
-        <StatCard label="Expenses" tone="negative">
+        <StatCard label="Expenses" tone="negative" :loading="isHydrating">
           {{ formatCurrency(rangeTotals.expenses, currencyCode, preferredLocale) }}
           <template #meta>
             {{ expenseShareLabel }} of income
@@ -83,6 +88,7 @@
           :labels="trend.labels"
           :income="trend.income"
           :expenses="trend.expenses"
+          :loading="isHydrating"
         />
       </article>
 
@@ -91,7 +97,7 @@
           <h2>Category breakdown</h2>
           <p>Where funds flow within the selected range.</p>
         </header>
-        <CategoryBreakdownChart :labels="categoryBreakdown.labels" :dataset="categoryBreakdown.values" />
+        <CategoryBreakdownChart :labels="categoryBreakdown.labels" :dataset="categoryBreakdown.values" :loading="isHydrating" />
       </article>
     </section>
 
@@ -105,7 +111,7 @@
           Clear all data
         </button>
       </header>
-      <TransactionList :groups="groupedEntries" @remove="handleRemove" />
+  <TransactionList :groups="groupedEntries" :loading="isHydrating" @remove="handleRemove" />
     </section>
   </div>
 </template>
@@ -193,11 +199,11 @@ const weeklyPicker = ref<string>(toWeekInputValue(today));
 const monthlyPicker = ref<string>(today.toISOString().slice(0, 7));
 const yearlyPicker = ref<string>(String(today.getFullYear()));
 
-const { transactions, monthlySummaries, availableCategories, addTransaction, removeTransaction, clearAll } = useLedger();
+const { transactions, monthlySummaries, availableCategories, addTransaction, removeTransaction, clearAll, state: ledgerState } = useLedger();
 const preferredLocale = usePreferredLocale();
 const currencyCode = 'HUF';
-
-const hasTransactions = computed(() => transactions.value.length > 0);
+const isHydrating = computed(() => ledgerState.hydrating);
+const hasTransactions = computed(() => !isHydrating.value && transactions.value.length > 0);
 
 const sortedTransactions = computed<LedgerEntry[]>(() =>
   [...transactions.value].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
@@ -350,6 +356,10 @@ const groupedEntries = computed<GroupedEntries[]>(() => {
 });
 
 const ledgerSubtitle = computed(() => {
+  if (isHydrating.value) {
+    return 'Loading your ledger...';
+  }
+
   if (!rangeTransactions.value.length) {
     return 'No activity in this range yet.';
   }
@@ -431,6 +441,11 @@ function confirmClearAll() {
   color: $color-text;
 }
 
+.range__button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .range__input {
   padding: 0.75rem 1rem;
   border-radius: $radius-sm;
@@ -438,6 +453,11 @@ function confirmClearAll() {
   background: rgba(16, 18, 33, 0.8);
   color: $color-text;
   font-family: inherit;
+}
+
+.range__input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .range__input::-webkit-inner-spin-button,

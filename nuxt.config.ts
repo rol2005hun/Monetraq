@@ -14,7 +14,9 @@ export default defineNuxtConfig({
         { name: 'theme-color', content: '#0f111a' }
       ],
       link: [
-        { rel: 'icon', type: 'image/svg+xml', href: '/icon.svg' }
+        { rel: 'icon', type: 'image/svg+xml', href: '/icon.svg' },
+        { rel: 'icon', type: 'image/png', sizes: '192x192', href: '/logo192.png' },
+        { rel: 'apple-touch-icon', href: '/logo.png' }
       ]
     }
   },
@@ -38,6 +40,16 @@ export default defineNuxtConfig({
           sizes: 'any',
           type: 'image/svg+xml',
           purpose: 'any maskable'
+        },
+        {
+          src: '/logo192.png',
+          sizes: '192x192',
+          type: 'image/png'
+        },
+        {
+          src: '/logo.png',
+          sizes: '512x512',
+          type: 'image/png'
         }
       ]
     },
@@ -46,7 +58,7 @@ export default defineNuxtConfig({
       cleanupOutdatedCaches: true
     },
     client: {
-      installPrompt: true
+      installPrompt: false
     },
     devOptions: {
       enabled: false,

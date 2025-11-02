@@ -1,41 +1,48 @@
 <template>
   <section class="list">
-    <div v-for="group in groups" :key="group.dayKey" class="list__group">
-      <header class="list__group-header">
-        <div>
-          <h2>{{ group.title }}</h2>
-          <p>{{ group.subtitle }}</p>
-        </div>
-        <div class="list__group-totals">
-          <span class="badge badge--income">+{{ group.incomeFormatted }}</span>
-          <span class="badge badge--expense">-{{ group.expenseFormatted }}</span>
-        </div>
-      </header>
-
-      <ul class="list__items">
-        <li v-for="entry in group.entries" :key="entry.id" class="list__item">
-          <div class="list__icon" :class="[`list__icon--${entry.type}`]">
-            <span>{{ entry.category[0]?.toUpperCase() }}</span>
-          </div>
-          <div class="list__meta">
-            <strong>{{ entry.category }}</strong>
-            <span>{{ entry.note || '—' }}</span>
-          </div>
-          <time class="list__time" :datetime="entry.timestamp">{{ entry.timeFormatted }}</time>
-          <span class="list__amount" :class="[`list__amount--${entry.type}`]">
-            {{ entry.amountFormatted }}
-          </span>
-          <button class="list__remove" type="button" @click="$emit('remove', entry.id)">
-            <span class="sr-only">Remove</span>
-            ×
-          </button>
-        </li>
-      </ul>
+    <div v-if="loading" class="list__status" aria-live="polite" aria-busy="true">
+      <span class="list__spinner" aria-hidden="true"></span>
+      <span>Loading your ledger...</span>
     </div>
 
-    <p v-if="!groups.length" class="list__empty">
-      No entries yet. Log your first movement to start the rhythm.
-    </p>
+    <template v-else>
+      <div v-for="group in groups" :key="group.dayKey" class="list__group">
+        <header class="list__group-header">
+          <div>
+            <h2>{{ group.title }}</h2>
+            <p>{{ group.subtitle }}</p>
+          </div>
+          <div class="list__group-totals">
+            <span class="badge badge--income">+{{ group.incomeFormatted }}</span>
+            <span class="badge badge--expense">-{{ group.expenseFormatted }}</span>
+          </div>
+        </header>
+
+        <ul class="list__items">
+          <li v-for="entry in group.entries" :key="entry.id" class="list__item">
+            <div class="list__icon" :class="[`list__icon--${entry.type}`]">
+              <span>{{ entry.category[0]?.toUpperCase() }}</span>
+            </div>
+            <div class="list__meta">
+              <strong>{{ entry.category }}</strong>
+              <span>{{ entry.note || '—' }}</span>
+            </div>
+            <time class="list__time" :datetime="entry.timestamp">{{ entry.timeFormatted }}</time>
+            <span class="list__amount" :class="[`list__amount--${entry.type}`]">
+              {{ entry.amountFormatted }}
+            </span>
+            <button class="list__remove" type="button" @click="$emit('remove', entry.id)">
+              <span class="sr-only">Remove</span>
+              ×
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <p v-if="!groups.length" class="list__empty">
+        No entries yet. Log your first movement to start the rhythm.
+      </p>
+    </template>
   </section>
 </template>
 
@@ -56,7 +63,7 @@ export interface GroupedEntries {
   entries: EntryViewModel[];
 }
 
-defineProps<{ groups: GroupedEntries[] }>();
+defineProps<{ groups: GroupedEntries[]; loading?: boolean }>();
 
 defineEmits<{ (event: 'remove', id: string): void }>();
 </script>
@@ -67,6 +74,28 @@ defineEmits<{ (event: 'remove', id: string): void }>();
 .list {
   display: grid;
   gap: 1.5rem;
+}
+
+.list__status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 2rem;
+  border-radius: $radius-lg;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(17, 19, 33, 0.75);
+  color: $color-text-muted;
+  font-weight: 500;
+}
+
+.list__spinner {
+  width: 1.2rem;
+  height: 1.2rem;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top-color: $color-accent;
+  border-radius: 50%;
+  animation: list-spin 0.8s linear infinite;
 }
 
 .list__group {
@@ -207,6 +236,15 @@ defineEmits<{ (event: 'remove', id: string): void }>();
   padding: 1.8rem;
   border: 1px dashed rgba(255, 255, 255, 0.14);
   border-radius: $radius-md;
+}
+
+@keyframes list-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 720px) {

@@ -131,29 +131,47 @@ export function useLedger() {
     });
 
     const state = reactive({
-        lastSyncedAt: new Date().toISOString()
+        lastSyncedAt: new Date().toISOString(),
+        hydrating: import.meta.client
     });
 
     if (import.meta.client) {
         onMounted(() => {
-            const storedTransactions = loadFromStorage<unknown>(LEDGER_STORAGE_KEY, []);
-            const hydratedTransactions = normaliseLedgerEntries(storedTransactions);
+            state.hydrating = true;
 
-            if (hydratedTransactions.length && JSON.stringify(hydratedTransactions) !== JSON.stringify(transactions.value)) {
-                transactions.value = hydratedTransactions;
-                state.lastSyncedAt = new Date().toISOString();
-            }
+            try {
+                const storedTransactions = loadFromStorage<unknown>(LEDGER_STORAGE_KEY, []);
+                const hydratedTransactions = normaliseLedgerEntries(storedTransactions);
 
-            const storedCategories = loadFromStorage<string[]>(CATEGORY_STORAGE_KEY, []);
-            if (storedCategories.length) {
-                const merged = new Set<string>([...userCategories.value, ...storedCategories.map(normaliseCategory)]);
-                userCategories.value = Array.from(merged).filter(Boolean).sort((a, b) => a.localeCompare(b));
+                if (hydratedTransactions.length && JSON.stringify(hydratedTransactions) !== JSON.stringify(transactions.value)) {
+                    transactions.value = hydratedTransactions;
+                }
+
+                const storedCategories = loadFromStorage<string[]>(CATEGORY_STORAGE_KEY, []);
+                if (storedCategories.length) {
+                    const merged = new Set<string>([...userCategories.value, ...storedCategories.map(normaliseCategory)]);
+                    userCategories.value = Array.from(merged).filter(Boolean).sort((a, b) => a.localeCompare(b));
+                }
+            } finally {
+                const complete = () => {
+                    state.hydrating = false;
+                    state.lastSyncedAt = new Date().toISOString();
+                };
+
+                if (typeof requestAnimationFrame === 'function') {
+                    requestAnimationFrame(complete);
+                } else {
+                    complete();
+                }
             }
         });
 
         watch(
             transactions,
             (items) => {
+                if (state.hydrating) {
+                    return;
+                }
                 saveToStorage(LEDGER_STORAGE_KEY, items);
                 state.lastSyncedAt = new Date().toISOString();
             },
@@ -163,6 +181,9 @@ export function useLedger() {
         watch(
             userCategories,
             (categories) => {
+                if (state.hydrating) {
+                    return;
+                }
                 saveToStorage(CATEGORY_STORAGE_KEY, categories);
             },
             { deep: true }
