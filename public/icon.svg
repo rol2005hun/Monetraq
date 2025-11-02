@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="128" fill="#0F111A"/>
+  <g filter="url(#glow)">
+    <circle cx="256" cy="256" r="168" fill="url(#gradient)"/>
+  </g>
+  <path d="M208 176C191.431 176 176 191.431 176 208V304C176 320.569 191.431 336 208 336H239.422C252.837 336 265.376 330.419 274.568 320.997L336 256L274.568 191.003C265.376 181.581 252.837 176 239.422 176H208Z" fill="#0F111A"/>
+  <path d="M304 208C320.569 208 336 223.431 336 240V272C336 288.569 320.569 304 304 304H288L320 272L288 240H304Z" fill="#0F111A"/>
+  <defs>
+    <linearGradient id="gradient" x1="120" y1="120" x2="392" y2="392" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8547F0"/>
+      <stop offset="1" stop-color="#35D399"/>
+    </linearGradient>
+    <filter id="glow" x="48" y="48" width="416" height="416" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="20" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+</svg>
