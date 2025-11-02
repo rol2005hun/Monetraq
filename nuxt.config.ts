@@ -47,7 +47,7 @@ export default defineNuxtConfig({
           type: 'image/png'
         },
         {
-          src: '/logo.png',
+          src: '/icon.png',
           sizes: '512x512',
           type: 'image/png'
         }
