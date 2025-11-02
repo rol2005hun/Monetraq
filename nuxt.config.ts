@@ -16,13 +16,14 @@ export default defineNuxtConfig({
       link: [
         { rel: 'icon', type: 'image/svg+xml', href: '/icon.svg' },
         { rel: 'icon', type: 'image/png', sizes: '192x192', href: '/logo192.png' },
-        { rel: 'apple-touch-icon', href: '/logo.png' }
+        { rel: 'apple-touch-icon', href: '/icon.png' }
       ]
     }
   },
 
   pwa: {
     registerType: 'autoUpdate',
+    registerWebManifestInRouteRules: true,
     strategies: process.env.NODE_ENV === 'development' ? 'injectManifest' : 'generateSW',
     manifest: {
       name: 'Monetraq',
